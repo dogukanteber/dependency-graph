@@ -41,23 +41,21 @@ class DependencyGraph:
     def get_full_dependency_graph(self):
         for node in self.graph.get_nodes():
             resolved = list()
-            self._traverse_dependencies(node, resolved)
-            dep_chain = list()
-            for dep in resolved[::-1]:
-                dep_chain.append(dep)
+            chain = self._traverse_dependencies(node, [], resolved)
+            self.dependency_chains.append(chain)
 
-            self.dependency_chains.append(dep_chain)
-
-    def _traverse_dependencies(self, node, resolved, unresolved=[]):
+    def _traverse_dependencies(self, node, dep_chain, resolved, unresolved=[]):
         unresolved.append(node)
+        dep_chain.append(node)
         for edge in self.graph.get_edges_for_node(node):
             if edge not in resolved:
                 if edge in unresolved:
                     raise Exception(f"Circular reference detected: {node} -> {edge}")
-                self._traverse_dependencies(edge, resolved, unresolved)
+                self._traverse_dependencies(edge, dep_chain, resolved, unresolved)
 
         resolved.append(node)
         unresolved.remove(node)
+        return dep_chain
 
     def print_dependency_chains(self):
         for chain in self.dependency_chains:
@@ -66,7 +64,7 @@ class DependencyGraph:
 
 
 if __name__ == "__main__":
-    g = Graph(get_data())
+    g = Graph(get_data("/tmp/test.json"))
     dep = DependencyGraph(g)
     dep.get_full_dependency_graph()
     dep.print_dependency_chains()
