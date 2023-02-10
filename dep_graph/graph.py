@@ -1,41 +1,72 @@
-import json
-import sys
+from .utils import get_data
 
 
-def get_data(file_name="/tmp/deps.json"):
-    try:
-        with open(file_name, "r") as file:
-            data = json.load(file)
-    except FileNotFoundError:
-        print(f"File {file_name} not found.  Aborting")
-        sys.exit(1)
-    except OSError:
-        print(f"OS error occurred trying to open {file_name}")
-        sys.exit(1)
-    except json.JSONDecodeError as err:
-        print(f"JSONDecodeError occurred parsing the {file_name}: {repr(err)}")
-        sys.exit(1)
-    except Exception as err:
-        print(f"Unexpected error opening {file_name} is", repr(err))
-        sys.exit(1)
+class Graph:
+    def __init__(self, json_data=None):
+        self.graph = self._construct_from_json(json_data)
 
-    return data
+    def _construct_from_json(self, data):
+        graph = dict()
+        if data is None:
+            return graph
+
+        for node in data.keys():
+            if node not in graph:
+                graph[node] = list()
+            for edge in data.get(node):
+                graph.get(node).append(edge)
+
+        return graph
+
+    def get_nodes(self):
+        return self.graph.keys()
+
+    def get_edges_for_node(self, node):
+        return self.graph.get(node)
+
+    # TODO: prettify the for loop
+    def __str__(self):
+        str = ""
+        for node in self.graph.keys():
+            str += f"{node} -> {self.graph.get(node)}\n"
+
+        return str
 
 
-def dep_resolve(data, node, resolved, unresolved):
-    unresolved.append(node)
-    print(node)
-    for edge in data.get(node):
-        if edge not in resolved:
-            if edge in unresolved:
-                raise Exception(f"Circular reference detected: {node} -> {edge}")
-            dep_resolve(data, edge, resolved, unresolved)
+class DependencyGraph:
+    def __init__(self, graph):
+        self.graph = graph
+        self.dependency_chains = list()
 
-    resolved.append(node)
-    unresolved.remove(node)
+    def get_full_dependency_graph(self):
+        for node in self.graph.get_nodes():
+            resolved = list()
+            self._traverse_dependencies(node, resolved)
+            dep_chain = list()
+            for dep in resolved[::-1]:
+                dep_chain.append(dep)
+
+            self.dependency_chains.append(dep_chain)
+
+    def _traverse_dependencies(self, node, resolved, unresolved=[]):
+        unresolved.append(node)
+        for edge in self.graph.get_edges_for_node(node):
+            if edge not in resolved:
+                if edge in unresolved:
+                    raise Exception(f"Circular reference detected: {node} -> {edge}")
+                self._traverse_dependencies(edge, resolved, unresolved)
+
+        resolved.append(node)
+        unresolved.remove(node)
+
+    def print_dependency_chains(self):
+        for chain in self.dependency_chains:
+            str = " - > ".join(chain)
+            print(str)
 
 
 if __name__ == "__main__":
-    data = get_data()
-    for pkg in data.keys():
-        dep_resolve(data, pkg, [], [])
+    g = Graph(get_data())
+    dep = DependencyGraph(g)
+    dep.get_full_dependency_graph()
+    dep.print_dependency_chains()
