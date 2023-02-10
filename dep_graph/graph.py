@@ -170,8 +170,20 @@ class DependencyGraph:
             print(str)
 
 
-if __name__ == "__main__":
-    g = Graph(get_data("/tmp/test.json"))
-    dep = DependencyGraph(g)
+def resolve_dependency_of(file_name: str = "/tmp/deps.json") -> list[list[str]]:
+    """Function that resolves dependencies of the packages
+
+    Args:
+        file_name (str, optional): Full or relative path to JSON data which holds package dependencies.
+        Defaults to "/tmp/deps.json".
+
+    Returns:
+        list[list[str]]: 2D list, each list represents a dependency chain for each package
+    """
+    data = get_data(file_name)
+    graph = Graph(data)
+    dep = DependencyGraph(graph)
     dep.get_full_dependency_graph()
     dep.print_dependency_chains()
+
+    return dep.dependency_chains
