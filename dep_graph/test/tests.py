@@ -8,12 +8,22 @@ from .factories import GraphFactory, DependencyGraphFactory
 
 @dataclass
 class FullDependencyTestCase:
+    """Data class to represent a dependency test case
+
+    It is created to write table-driven test cases.
+    """
+
     input: List[str]
     expected: List[str]
 
 
 @dataclass
 class SingleDependencyTestCase(FullDependencyTestCase):
+    """Data class to represent a single test case of `FullDependencyTestCase`
+
+    It is created to write table-driven test cases.
+    """
+
     node: str
 
 
@@ -54,8 +64,22 @@ class TestDependencyGraph(unittest.TestCase):
                     ["g"],
                 ],
             ),
+            FullDependencyTestCase(
+                input={
+                    "a": [],
+                    "b": [],
+                    "c": [],
+                },
+                expected=[
+                    ["a"],
+                    ["b"],
+                    ["c"],
+                ],
+            ),
         ]
 
+        # The reason why this list is 2D is to remove the unnecessary creations
+        # of Graph and DependencyGraph objects.
         self.single_test_cases = [
             [
                 SingleDependencyTestCase(
@@ -193,6 +217,17 @@ class TestDependencyGraph(unittest.TestCase):
             ],
         ]
 
+        self.circular_dependency_cases = [
+            [
+                SingleDependencyTestCase(
+                    node="a", input={"a": ["b"], "b": ["a"]}, expected={}
+                ),
+                SingleDependencyTestCase(
+                    node="b", input={"a": ["b"], "b": ["a"]}, expected={}
+                ),
+            ]
+        ]
+
     def test_get_full_dependency_graph(self):
         for case in self.test_cases:
             dep_graph = DependencyGraphFactory.build(GraphFactory.build(case.input))
@@ -216,18 +251,7 @@ class TestDependencyGraph(unittest.TestCase):
                 )
 
     def test_traverse_dependencies_circular(self):
-        circular_dependency_cases = [
-            [
-                SingleDependencyTestCase(
-                    node="a", input={"a": ["b"], "b": ["a"]}, expected={}
-                ),
-                SingleDependencyTestCase(
-                    node="b", input={"a": ["b"], "b": ["a"]}, expected={}
-                ),
-            ]
-        ]
-
-        for i, graph in enumerate(circular_dependency_cases):
+        for i, graph in enumerate(self.circular_dependency_cases):
             dep_graph = DependencyGraphFactory.build(GraphFactory.build(graph[i].input))
             for case in graph:
                 with self.assertRaises(CircularDependencyException):
