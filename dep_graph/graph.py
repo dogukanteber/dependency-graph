@@ -1,4 +1,4 @@
-from typing import Dict, List, NewType
+from typing import NewType
 
 from .utils import get_data
 
@@ -7,7 +7,11 @@ Graph = NewType("Graph", dict)
 
 
 class CircularDependencyException(Exception):
-    "Raised when at least two packages depend on each other"
+    """Raised when at least two packages depend on each other
+
+    For example, a depends b and b depends a.
+    """
+
     pass
 
 
@@ -15,23 +19,27 @@ class Graph:
     """
     Represents unweighted, directed graph data structure. Implemented using adjacency list
 
+    Note: Implementation of this class might seem redundant since it basically holds the same
+    information as the given data in the same format. However, I liked the idea to wrap the data
+    as a Graph object and pass it rather than passing a dict object. This is totally my preference.
+
     Attributes:
-        graph (Dict, optional): dictionary that holds nodes and edges of the graph
+        graph (dict, optional): dictionary that holds nodes and edges of the graph
     """
 
-    def __init__(self, json_data: Dict = None) -> None:
+    def __init__(self, json_data: dict = None) -> None:
         """Constructor for the graph data structure
 
         Args:
-            json_data (Dict, optional): JSON data. Defaults to None.
+            json_data (dict, optional): JSON data. Defaults to None.
         """
         self.graph = self._construct_from_json(json_data)
 
-    def _construct_from_json(self, data: Dict) -> Graph:
+    def _construct_from_json(self, data: dict) -> Graph:
         """Method that converts the given dictionary to a Graph object
 
         Args:
-            data (Dict): dictionary that holds nodes and edges of a graph
+            data (dict): dictionary that holds nodes and edges of a graph
 
         Returns:
             Graph: newly constructed graph object
@@ -48,22 +56,22 @@ class Graph:
 
         return graph
 
-    def get_nodes(self) -> List[str]:
+    def get_nodes(self) -> list[str]:
         """Returns the nodes of the graph
 
         Returns:
-            List[str]: nodes of the graph
+            list[str]: nodes of the graph
         """
         return self.graph.keys()
 
-    def get_edges_for_node(self, node: str) -> List[str]:
+    def get_edges_for_node(self, node: str) -> list[str]:
         """Returns the edges that are connected to given `node`
 
         Args:
             node (str): the node to find its edges
 
         Returns:
-            List[str]: the edges that are connected to `node`
+            list[str]: the edges that are connected to `node`
         """
         return self.graph.get(node)
 
@@ -86,7 +94,7 @@ class DependencyGraph:
 
     Attributes:
         graph (Graph): a Graph object to construct its dependency graph
-        dependency_chains (List[List[str]]) : holds the information of which package depends on which packages
+        dependency_chains (list[list[str]]) : holds the information of which package depends on which packages
 
     """
 
@@ -121,17 +129,17 @@ class DependencyGraph:
     def _traverse_dependencies(
         self,
         node: str,
-        dep_chain: List[str],
-        resolved: List[str],
-        unresolved: List[str] = [],
-    ) -> List[str]:
+        dep_chain: list[str],
+        resolved: list[str],
+        unresolved: list[str] = [],
+    ) -> list[str]:
         """Finds the dependencies of a single node
 
         Args:
             node (str): node to find its dependencies
-            dep_chain (List[str]): holds dependency chain
-            resolved (List[str]): holds resolved dependencies
-            unresolved (List[str], optional): holds unresolved dependencies. Defaults to [].
+            dep_chain (list[str]): holds dependency chain
+            resolved (list[str]): holds resolved dependencies
+            unresolved (list[str], optional): holds unresolved dependencies. Defaults to [].
 
         Raises:
             CircularDependencyException: occurs when two or more packages depend on each other
@@ -139,7 +147,7 @@ class DependencyGraph:
             For instance, a depends b, b depends c and c depends a.
 
         Returns:
-            List[str]: dependency hierarchy
+            list[str]: dependency hierarchy
         """
         unresolved.append(node)
         dep_chain.append(node)

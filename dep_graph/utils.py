@@ -2,7 +2,15 @@ import json
 import sys
 
 
-def get_data(file_name="/tmp/deps.json"):
+def get_data(file_name: str = "/tmp/deps.json") -> dict:
+    """Reads the given JSON file
+
+    Args:
+        file_name (str, optional): Full or relative path to the file. Defaults to "/tmp/deps.json".
+
+    Returns:
+        dict: a dict object
+    """
     try:
         with open(file_name, "r") as file:
             data = json.load(file)

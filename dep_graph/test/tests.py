@@ -1,6 +1,5 @@
 import unittest
 from dataclasses import dataclass
-from typing import List
 
 from ..graph import CircularDependencyException
 from .factories import GraphFactory, DependencyGraphFactory
@@ -13,8 +12,8 @@ class FullDependencyTestCase:
     It is created to write table-driven test cases.
     """
 
-    input: List[str]
-    expected: List[str]
+    input: list[str]
+    expected: list[str]
 
 
 @dataclass
