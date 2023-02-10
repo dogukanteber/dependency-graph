@@ -75,6 +75,8 @@ class TestDependencyGraph(unittest.TestCase):
                     ["c"],
                 ],
             ),
+            FullDependencyTestCase(input={}, expected=[]),
+            FullDependencyTestCase(input={"a": []}, expected=[["a"]]),
         ]
 
         # The reason why this list is 2D is to remove the unnecessary creations
@@ -239,8 +241,8 @@ class TestDependencyGraph(unittest.TestCase):
             )
 
     def test_traverse_dependencies(self):
-        for i, graph in enumerate(self.single_test_cases):
-            dep_graph = DependencyGraphFactory.build(GraphFactory.build(graph[i].input))
+        for graph in self.single_test_cases:
+            dep_graph = DependencyGraphFactory.build(GraphFactory.build(graph[0].input))
             for case in graph:
                 actual = dep_graph._traverse_dependencies(case.node, [], [])
                 self.assertListEqual(
@@ -250,8 +252,8 @@ class TestDependencyGraph(unittest.TestCase):
                 )
 
     def test_traverse_dependencies_circular(self):
-        for i, graph in enumerate(self.circular_dependency_cases):
-            dep_graph = DependencyGraphFactory.build(GraphFactory.build(graph[i].input))
+        for graph in self.circular_dependency_cases:
+            dep_graph = DependencyGraphFactory.build(GraphFactory.build(graph[0].input))
             for case in graph:
                 with self.assertRaises(CircularDependencyException):
                     dep_graph._traverse_dependencies(case.node, [], [])
