@@ -187,3 +187,7 @@ def resolve_dependency_of(file_name: str = "/tmp/deps.json") -> list[list[str]]:
     dep.print_dependency_chains()
 
     return dep.dependency_chains
+
+
+if __name__ == "__main__":
+    deps = resolve_dependency_of()
